@@ -51,8 +51,6 @@ ENV LANG=C.UTF-8
 RUN apk add --no-cache libftdi1 libusb libgcc
 
 COPY --from=builder /opt/owfs/ /opt/owfs/
-COPY --from=builder /usr/local/lib/libow*.so* /usr/local/lib/
-COPY --from=builder /usr/local/bin/ow* /usr/local/bin/
 
 # Copy data for add-on
 COPY rootfs /
