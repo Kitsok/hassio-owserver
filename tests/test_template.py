@@ -29,7 +29,7 @@ class TestDeviceTypes:
 
     def test_usb_specific(self, render_template):
         conf = render_template(make_options({"device_type": "usb", "device": "/dev/bus/usb/001/002"}))
-        assert "server: usb = /dev/bus/usb/001/002" in conf
+        assert "server: usb = 1:2" in conf
 
     def test_ha7net_with_server(self, render_template):
         conf = render_template(make_options({"device_type": "ha7net", "server": "192.168.1.10"}))

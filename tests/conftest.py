@@ -118,6 +118,14 @@ def _download_tempio(tmp_path_factory) -> Path | None:
     return binary
 
 
+def _normalize_options(options: dict) -> dict:
+    result = subprocess.run(
+        ["jq", "-f", str(PROJECT_DIR / "rootfs/etc/owfs-options.jq")],
+        input=json.dumps(options), capture_output=True, text=True, check=True,
+    )
+    return json.loads(result.stdout)
+
+
 def _render_with_binary(tempio_bin: Path, options: dict) -> str:
     """Render template using local tempio binary."""
     result = subprocess.run(
@@ -125,7 +133,7 @@ def _render_with_binary(tempio_bin: Path, options: dict) -> str:
          "-conf", "/dev/stdin",
          "-template", str(TEMPLATE_PATH),
          "-out", "/dev/stdout"],
-        input=json.dumps(options), capture_output=True, text=True,
+        input=json.dumps(_normalize_options(options)), capture_output=True, text=True,
     )
     if result.returncode != 0:
         pytest.fail(f"tempio failed: {result.stderr}")
@@ -139,7 +147,7 @@ def _render_with_container(options: dict) -> str:
          "tempio", "-conf", "/dev/stdin",
          "-template", "/etc/owfs.template.conf",
          "-out", "/dev/stdout"],
-        input=json.dumps(options), capture_output=True, text=True,
+        input=json.dumps(_normalize_options(options)), capture_output=True, text=True,
     )
     if result.returncode != 0:
         pytest.fail(f"tempio failed: {result.stderr}")

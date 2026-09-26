@@ -95,6 +95,12 @@ This is mandatory option only for following **device_type**:
 - i2c
 - pbm
 
+For a DS9490 USB adapter, omit `device` to use all attached adapters. To
+select one adapter, set `device` to its `/dev/bus/usb/<bus>/<device>` path;
+the app converts this to the numeric address required by OWFS. USB bus and
+device numbers can change after reconnecting or restarting the VM, so omitting
+`device` is preferable when only one adapter is passed through.
+
 #### Sub-option: `server`
 
 Specify the network address of the device (IP address or hostname, optionally with port).

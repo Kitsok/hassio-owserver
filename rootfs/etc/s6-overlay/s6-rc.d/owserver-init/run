@@ -47,9 +47,14 @@ for device in $(bashio::config "devices|keys"); do
     fi
 done
 
+# Normalize USB device paths without changing the persisted user options.
+if ! jq -f /etc/owfs-options.jq /data/options.json > /run/owserver-options.json; then
+    bashio::exit.nok "Unable to normalize the OWFS device configuration"
+fi
+
 # generating owfs config file
 tempio \
-    -conf /data/options.json \
+    -conf /run/owserver-options.json \
     -template /etc/owfs.template.conf \
     -out /etc/owfs.conf
 
