@@ -20,8 +20,7 @@ uart: true
 usb: true
 options:
   devices:
-    - device_type: device_type
-      device: device
+    - device_type: fake
   owhttpd: true
   temperature_scale: Celsius
 schema:

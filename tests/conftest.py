@@ -10,6 +10,7 @@ import urllib.request
 from pathlib import Path
 
 import pytest
+import yaml
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 DEV_DIR = PROJECT_DIR / "dev"
@@ -19,12 +20,8 @@ COMPOSE_CMD = ["docker", "compose", "-p", "owserver-test", "-f", str(DEV_DIR / "
 CONTAINER = "owserver-test-owserver-1"
 OWSERVER = "localhost:4304"
 
-DEFAULT_OPTIONS = {
-    "devices": [{"device_type": "fake"}],
-    "owhttpd": True,
-    "temperature_scale": "Celsius",
-    "debug": False,
-}
+# Exercise the shipped first-install configuration, including normal logging.
+DEFAULT_OPTIONS = yaml.safe_load((PROJECT_DIR / "config.yaml").read_text())["options"]
 
 
 def _wait_for_owhttpd(timeout: int = 120) -> None:
