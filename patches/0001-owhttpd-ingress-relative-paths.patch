@@ -1,13 +1,10 @@
-# owhttpd: convert absolute hrefs to relative paths for HA ingress
-#
-# Home Assistant ingress proxy rewrites URLs, so owhttpd links must use
-# relative paths instead of absolute ones. Without this, navigation within
-# the owhttpd web UI is broken when accessed through HA ingress.
-#
-# Applied against OWFS v3.2p4 (commit c68deb1)
+# Keep OWHTTPD navigation inside the Home Assistant ingress prefix.
+# A relative document base points to the OWHTTPD root at every nesting depth;
+# device, parent, uncached, and error-page links resolve against that base.
+# Applied against OWFS v3.2p4 (commit c68deb1).
 
 diff --git a/module/owhttpd/src/c/owhttpd_dir.c b/module/owhttpd/src/c/owhttpd_dir.c
-index 5c5074d..8204688 100644
+index 5c5074d..89b205b 100644
 --- a/module/owhttpd/src/c/owhttpd_dir.c
 +++ b/module/owhttpd/src/c/owhttpd_dir.c
 @@ -59,7 +59,7 @@ static void ShowDirCallback(void *v, const struct parsedname *pn_entry)
@@ -24,31 +21,84 @@ index 5c5074d..8204688 100644
  	if (b != 1) {
  		char * escaped_path = httpescape( pn->path ) ;
 -		fprintf(out, "<TR><TD><A HREF='%.*s'><CODE><B><BIG>up</BIG></B></CODE></A></TD><TD>higher level</TD><TD>directory</TD></TR>", b, escaped_path==NULL ? pn->path : escaped_path );
-+		fprintf(out, "<TR><TD><A HREF='././././'><CODE><B><BIG>up</BIG></B></CODE></A></TD><TD>higher level</TD><TD>directory</TD></TR>", b, escaped_path==NULL ? pn->path : escaped_path );
++		fprintf(out, "<TR><TD><A HREF='.%.*s'><CODE><B><BIG>up</BIG></B></CODE></A></TD><TD>higher level</TD><TD>directory</TD></TR>", b, escaped_path==NULL ? pn->path : escaped_path );
  		if ( escaped_path ) {
  			owfree( escaped_path ) ;
  		}
  	} else {
 -		fprintf(out, "<TR><TD><A HREF='/'><CODE><B><BIG>top</BIG></B></CODE></A></TD><TD>highest level</TD><TD>directory</TD></TR>");
-+		fprintf(out, "<TR><TD><A HREF='././././'><CODE><B><BIG>top</BIG></B></CODE></A></TD><TD>highest level</TD><TD>directory</TD></TR>");
++		fprintf(out, "<TR><TD><A HREF='./'><CODE><B><BIG>top</BIG></B></CODE></A></TD><TD>highest level</TD><TD>directory</TD></TR>");
  	}
  
  	FS_dir(ShowDirCallback, oc, pn);
+diff --git a/module/owhttpd/src/c/owhttpd_handler.c b/module/owhttpd/src/c/owhttpd_handler.c
+index f1bd24b..63d4ec7 100644
+--- a/module/owhttpd/src/c/owhttpd_handler.c
++++ b/module/owhttpd/src/c/owhttpd_handler.c
+@@ -390,7 +390,7 @@ static void Bad400(struct OutputControl * oc, const enum content_type ct)
+ 			HTTPtitle(oc, "Error 400 -- Bad request");
+ 			HTTPheader(oc, "Unrecognized Request");
+ 			fprintf(out, "<P>The 1-wire web server is carefully constrained for security and stability. Your requested web page is not recognized.</P>");
+-			fprintf(out, "<P>Navigate from the <A HREF=\"/\">Main page</A> for best results.</P>");
++			fprintf(out, "<P>Navigate from the <A HREF=\"./\">Main page</A> for best results.</P>");
+ 			HTTPfoot(oc);
+ 	}
+ }
+@@ -413,7 +413,7 @@ static void Bad404(struct OutputControl * oc, const enum content_type ct)
+ 			HTTPtitle(oc, "Error 404 -- Item doesn't exist");
+ 			HTTPheader(oc, "Nonexistent Device");
+ 			fprintf(out, "<P>The 1-wire web server is carefully constrained for security and stability. Your requested device is not recognized.</P>");
+-			fprintf(out, "<P>Navigate from the <A HREF=\"/\">Main page</A> for best results.</P>");
++			fprintf(out, "<P>Navigate from the <A HREF=\"./\">Main page</A> for best results.</P>");
+ 			HTTPfoot(oc);
+ }	}
+ 
 diff --git a/module/owhttpd/src/c/owhttpd_present.c b/module/owhttpd/src/c/owhttpd_present.c
-index 6560955..f88c3d4 100644
+index 6560955..f463cd7 100644
 --- a/module/owhttpd/src/c/owhttpd_present.c
 +++ b/module/owhttpd/src/c/owhttpd_present.c
-@@ -62,7 +62,7 @@ void HTTPheader(struct OutputControl * oc, const char *head)
+@@ -49,11 +49,29 @@ void HTTPstart(struct OutputControl * oc, const char *status, const enum content
+ 	fprintf(out, "\r\n");
+ }
+ 
++/* Resolve relative links from the OWHTTPD root, preserving any ingress prefix.
++ * Count URL separators, not decoded device names; trailing slashes matter. */
++static void HTTPbase(FILE *out, const char *path)
++{
++    const char *p = path;
++    fputs("<BASE HREF='./", out);
++    if (p != NULL && *p == '/') {
++        for (++p; *p != '\0' && *p != '?' && *p != '#'; ++p) {
++            if (*p == '/') {
++                fputs("../", out);
++            }
++        }
++    }
++    fputs("'>", out);
++}
++
+ void HTTPtitle(struct OutputControl * oc, const char *title)
+ {
+ 	FILE * out = oc->out ;
+ 	
+-	fprintf(out, "<HTML><HEAD><TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
++	fputs("<HTML><HEAD>", out);
++	HTTPbase(out, oc->base_url);
++	fprintf(out, "<TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
+ }
+ 
+ void HTTPheader(struct OutputControl * oc, const char *head)
+@@ -62,7 +80,7 @@ void HTTPheader(struct OutputControl * oc, const char *head)
  	
  	fprintf(out,
  			"<BODY " BODYCOLOR "><TABLE " TOPTABLE
 -			"><TR><TD>OWFS</TD><TD><A HREF='/'>Bus listing</A></TD><TD><A HREF='http://www.owfs.org'>OWFS homepage</A></TD><TD><A HREF='http://www.maxim-ic.com'>Dallas/Maxim</A></TD><TD>by <A HREF='mailto://paul.alfille@gmail.com'>Paul H Alfille</A></TD></TR></TABLE>\n");
-+			"><TR><TD>OWFS</TD><TD><A HREF='././././'>Bus listing</A></TD><TD><A HREF='http://www.owfs.org'>OWFS homepage</A></TD><TD><A HREF='http://www.maxim-ic.com'>Dallas/Maxim</A></TD><TD>by <A HREF='mailto://paul.alfille@gmail.com'>Paul H Alfille</A></TD></TR></TABLE>\n");
++			"><TR><TD>OWFS</TD><TD><A HREF='./'>Bus listing</A></TD><TD><A HREF='http://www.owfs.org'>OWFS homepage</A></TD><TD><A HREF='http://www.maxim-ic.com'>Dallas/Maxim</A></TD><TD>by <A HREF='mailto://paul.alfille@gmail.com'>Paul H Alfille</A></TD></TR></TABLE>\n");
  	fprintf(out, "<H1>%s</H1><HR>\n", head);
  }
  
 diff --git a/module/owhttpd/src/c/owhttpd_read.c b/module/owhttpd/src/c/owhttpd_read.c
-index 3da73fd..954524b 100644
+index 3da73fd..55ea959 100644
 --- a/module/owhttpd/src/c/owhttpd_read.c
 +++ b/module/owhttpd/src/c/owhttpd_read.c
 @@ -328,7 +328,7 @@ static void ShowWriteonly(struct OutputControl * oc, struct one_wire_query *owq)
@@ -69,7 +119,7 @@ index 3da73fd..954524b 100644
  	}
  	fprintf(out, "<TABLE BGCOLOR=\"#DDDDDD\" BORDER=1>");
 -	fprintf(out, "<TR><TD><A HREF='%.*s'><CODE><B><BIG>up</BIG></B></CODE></A></TD><TD>directory</TD></TR>", Backup(pn->path), pn->path);
-+	fprintf(out, "<TR><TD><A HREF='././././'><CODE><B><BIG>up</BIG></B></CODE></A></TD><TD>directory</TD></TR>", Backup(pn->path), pn->path);
++	fprintf(out, "<TR><TD><A HREF='.%.*s'><CODE><B><BIG>up</BIG></B></CODE></A></TD><TD>directory</TD></TR>", Backup(pn->path), pn->path);
  
  
  	if (pn->selected_filetype == NO_FILETYPE) {	/* whole device */

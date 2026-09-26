@@ -1,21 +1,15 @@
-# owhttpd: inject CSS for modern Home Assistant-style theme
-#
-# Injects a <style> block into the HTML <head> to modernize the owhttpd
-# web interface with HA-style cards, colors, and dark mode support.
-# No HTML structure changes — pure CSS override of legacy inline attributes.
-#
-# Applied against OWFS v3.2p4 (commit c68deb1)
+# Add Home Assistant-style CSS after the ingress navigation patch.
 
 diff --git a/module/owhttpd/src/c/owhttpd_present.c b/module/owhttpd/src/c/owhttpd_present.c
-index 6560955..a66d3a1 100644
+index f463cd7..63578c6 100644
 --- a/module/owhttpd/src/c/owhttpd_present.c
 +++ b/module/owhttpd/src/c/owhttpd_present.c
-@@ -53,7 +53,78 @@ void HTTPtitle(struct OutputControl * oc, const char *title)
- {
- 	FILE * out = oc->out ;
+@@ -71,7 +71,78 @@ void HTTPtitle(struct OutputControl * oc, const char *title)
  	
--	fprintf(out, "<HTML><HEAD><TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
-+	fprintf(out, "<HTML><HEAD><TITLE>1-Wire Web: %s</TITLE>\n", title);
+ 	fputs("<HTML><HEAD>", out);
+ 	HTTPbase(out, oc->base_url);
+-	fprintf(out, "<TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
++	fprintf(out, "<TITLE>1-Wire Web: %s</TITLE>\n", title);
 +	fprintf(out,
 +		"<meta name='viewport' content='width=device-width,initial-scale=1'>"
 +		"<style>"
