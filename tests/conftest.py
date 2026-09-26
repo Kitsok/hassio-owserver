@@ -23,7 +23,7 @@ DEFAULT_OPTIONS = {
     "devices": [{"device_type": "fake"}],
     "owhttpd": True,
     "temperature_scale": "Celsius",
-    "debug": True,
+    "debug": False,
 }
 
 
