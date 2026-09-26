@@ -77,12 +77,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: 🏗 Set up build cache
         id: cache
         uses: actions/cache@v6
         with:
           path: /tmp/.docker-cache
-          key: docker-${{ matrix.architecture }}-${{ github.sha }}
+          key: docker-${{ matrix.architecture }}-${{ github.event.workflow_run.head_sha || github.sha }}
           restore-keys: |
             docker-${{ matrix.architecture }}
       - name: 🏗 Set up QEMU
@@ -133,7 +135,7 @@ jobs:
             BUILD_DESCRIPTION=${{ needs.information.outputs.description }}
             BUILD_FROM=${{ steps.flags.outputs.from }}
             BUILD_NAME=${{ needs.information.outputs.name }}
-            BUILD_REF=${{ github.sha }}
+            BUILD_REF=${{ github.event.workflow_run.head_sha || github.sha }}
             BUILD_REPOSITORY=${{ github.repository }}
             BUILD_VERSION=${{ needs.information.outputs.version }}
       # This ugly bit is necessary, or our cache will grow forever...
