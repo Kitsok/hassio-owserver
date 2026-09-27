@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+- Restrict supported adapters to DS9490 USB devices; retain fake devices for testing.
+- Remove serial, PBM, Ethernet, and kernel w1 adapter options, UART access, and FTDI dependencies. Existing configurations using removed adapters must migrate to DS9490 USB.
+
 ## 0.9.1
 - Bump addon base image to 21.0.0
 - Bump builder alpine to alpine:3.24
