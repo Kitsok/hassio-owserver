@@ -7,7 +7,7 @@ index f463cd7..63578c6 100644
 @@ -71,7 +71,78 @@ void HTTPtitle(struct OutputControl * oc, const char *title)
  	
  	fputs("<HTML><HEAD>", out);
- 	HTTPbase(out, oc->base_url);
+ 	HTTPbase(out, oc->request_path);
 -	fprintf(out, "<TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
 +	fprintf(out, "<TITLE>1-Wire Web: %s</TITLE>\n", title);
 +	fprintf(out,

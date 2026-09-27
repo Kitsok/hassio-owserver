@@ -1,6 +1,4 @@
-# Keep OWHTTPD navigation inside the Home Assistant ingress prefix.
-# A relative document base points to the OWHTTPD root at every nesting depth;
-# device, parent, uncached, and error-page links resolve against that base.
+# Preserve the original request path for ingress-relative navigation.
 # Applied against OWFS v3.2p4 (commit c68deb1).
 
 diff --git a/module/owhttpd/src/c/owhttpd_dir.c b/module/owhttpd/src/c/owhttpd_dir.c
@@ -32,10 +30,66 @@ index 5c5074d..89b205b 100644
  
  	FS_dir(ShowDirCallback, oc, pn);
 diff --git a/module/owhttpd/src/c/owhttpd_handler.c b/module/owhttpd/src/c/owhttpd_handler.c
-index f1bd24b..63d4ec7 100644
+index f1bd24b..4c3cd5f 100644
 --- a/module/owhttpd/src/c/owhttpd_handler.c
 +++ b/module/owhttpd/src/c/owhttpd_handler.c
-@@ -390,7 +390,7 @@ static void Bad400(struct OutputControl * oc, const enum content_type ct)
+@@ -32,7 +32,7 @@ static void Bad400( struct OutputControl * oc, const enum content_type ct);
+ static void Bad404( struct OutputControl * oc, const enum content_type ct);
+ 
+ /* URL parsing function */
+-static void URLparse(struct urlparse *up);
++static void URLparse(struct urlparse *up, struct OutputControl *oc);
+ static enum http_return handle_GET( struct OutputControl * oc, struct urlparse * up) ;
+ static enum http_return handle_POST( struct OutputControl * oc, struct urlparse * up) ;
+ static void ReadToCRLF( struct OutputControl * oc ) ;
+@@ -51,7 +51,7 @@ int handle_socket(FILE * out)
+ 
+ 	struct urlparse up;
+ 	
+-	struct OutputControl s_oc = { out, 0, NULL, NULL, } ;
++	struct OutputControl s_oc = { out, 0, NULL, NULL, NULL, } ;
+ 	struct OutputControl * oc = &s_oc ;
+ 
+ 	struct parsedname s_pn;
+@@ -60,7 +60,7 @@ int handle_socket(FILE * out)
+ 	up.line = NULL ; // prep for getline with null. Will be allocated by getline.
+ 	if ( getline(&(up.line), &(up.line_length), out) >= 0 ) {
+ 		LEVEL_CALL("PreParse line=%s", up.line);
+-		URLparse(&up);				/* Break up URL */
++		URLparse(&up, oc);				/* Break up URL */
+ 		httpunescape((BYTE *) up.file    );
+ 		httpunescape((BYTE *) up.request );
+ 		httpunescape((BYTE *) up.value   );
+@@ -168,6 +168,9 @@ int handle_socket(FILE * out)
+ 		FS_ParsedName_destroy(pn);
+ 	}
+ 	
++	if ( oc->request_path != NULL ) {
++		owfree(oc->request_path);
++	}
+ 	if ( oc->base_url != NULL ) {
+ 		owfree( oc->base_url ) ;
+ 	}
+@@ -284,7 +287,7 @@ static enum http_return handle_POST( struct OutputControl * oc, struct urlparse
+ }
+ 
+ /* URL handler for a web page */
+-static void URLparse(struct urlparse *up)
++static void URLparse(struct urlparse *up, struct OutputControl *oc)
+ {
+ 	char *str;
+ 	int first = 1;
+@@ -327,6 +330,9 @@ static void URLparse(struct urlparse *up)
+ 		}
+ 	}
+ 
++	/* Preserve URL spelling before trimming and decoding for filesystem use. */
++	oc->request_path = owstrdup(up->file == NULL ? "" : up->file);
++
+ 	/* Separate out the filename and FORM data */
+ 	if (up->file) {
+ 		for (str = up->file; *str; str++) {
+@@ -390,7 +396,7 @@ static void Bad400(struct OutputControl * oc, const enum content_type ct)
  			HTTPtitle(oc, "Error 400 -- Bad request");
  			HTTPheader(oc, "Unrecognized Request");
  			fprintf(out, "<P>The 1-wire web server is carefully constrained for security and stability. Your requested web page is not recognized.</P>");
@@ -44,7 +98,7 @@ index f1bd24b..63d4ec7 100644
  			HTTPfoot(oc);
  	}
  }
-@@ -413,7 +413,7 @@ static void Bad404(struct OutputControl * oc, const enum content_type ct)
+@@ -413,7 +419,7 @@ static void Bad404(struct OutputControl * oc, const enum content_type ct)
  			HTTPtitle(oc, "Error 404 -- Item doesn't exist");
  			HTTPheader(oc, "Nonexistent Device");
  			fprintf(out, "<P>The 1-wire web server is carefully constrained for security and stability. Your requested device is not recognized.</P>");
@@ -54,7 +108,7 @@ index f1bd24b..63d4ec7 100644
  }	}
  
 diff --git a/module/owhttpd/src/c/owhttpd_present.c b/module/owhttpd/src/c/owhttpd_present.c
-index 6560955..f463cd7 100644
+index 6560955..3772134 100644
 --- a/module/owhttpd/src/c/owhttpd_present.c
 +++ b/module/owhttpd/src/c/owhttpd_present.c
 @@ -49,11 +49,29 @@ void HTTPstart(struct OutputControl * oc, const char *status, const enum content
@@ -83,7 +137,7 @@ index 6560955..f463cd7 100644
  	
 -	fprintf(out, "<HTML><HEAD><TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
 +	fputs("<HTML><HEAD>", out);
-+	HTTPbase(out, oc->base_url);
++	HTTPbase(out, oc->request_path);
 +	fprintf(out, "<TITLE>1-Wire Web: %s</TITLE></HEAD>\n", title);
  }
  
@@ -123,3 +177,15 @@ index 3da73fd..55ea959 100644
  
  
  	if (pn->selected_filetype == NO_FILETYPE) {	/* whole device */
+diff --git a/module/owhttpd/src/include/owhttpd.h b/module/owhttpd/src/include/owhttpd.h
+index f59e2ea..42e896d 100644
+--- a/module/owhttpd/src/include/owhttpd.h
++++ b/module/owhttpd/src/include/owhttpd.h
+@@ -40,6 +40,7 @@ struct OutputControl {
+ 	FILE * out ;
+ 	int not_first ;
+ 	char * base_url ;
++	char * request_path ;
+ 	char * host ;
+ } ;
+ 
