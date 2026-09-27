@@ -20,9 +20,9 @@ class TestUsbOptions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)["devices"][0]["device"], "2:6")
 
-    def test_unspecified_usb_and_other_adapters_are_unchanged(self):
+    def test_unspecified_usb_and_fake_are_unchanged(self):
         devices = [{"device_type": "usb"},
-                   {"device_type": "serial", "device": "/dev/ttyUSB0"}]
+                   {"device_type": "fake"}]
         result = self.normalize(devices)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)["devices"], devices)
@@ -33,6 +33,14 @@ class TestUsbOptions(unittest.TestCase):
                 result = self.normalize([{"device_type": "usb", "device": path}])
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("USB device must be", result.stderr)
+
+    def test_removed_and_unknown_adapters_are_rejected(self):
+        for device_type in ("serial", "passive", "pbm", "ha7net", "link",
+                            "enet", "etherweather", "w1", "i2c", "unknown", None):
+            with self.subTest(device_type=device_type):
+                result = self.normalize([{"device_type": device_type}])
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Unsupported device_type", result.stderr)
 
     def test_multiple_usb_adapters_keep_distinct_addresses(self):
         devices = [{"device_type": "usb", "device": f"/dev/bus/usb/001/{n:03}"}

@@ -9,7 +9,7 @@ RUN apk add --no-cache \
   alpine-keys bash automake make git rsync tar gcc g++ \
   binutils libstdc++ libgfortran readline readline-dev python3-dev dev86 m4 libtool autoconf swig \
   linux-headers build-base util-linux \
-  libftdi1-dev libusb-dev
+  libusb-dev
 
 RUN git clone --single-branch --branch ${OWFS_VERSION} --depth 1 https://github.com/owfs/owfs /owfs-code
 
@@ -37,7 +37,7 @@ RUN cd /owfs-code \
     --enable-debug \
     --enable-owserver \
     --enable-owhttpd \
-    --enable-ftdi \
+    --disable-ftdi \
     --enable-usb \
     --enable-owshell \
     --disable-w1 \
@@ -48,7 +48,7 @@ FROM ${BUILD_FROM}
 
 ENV LANG=C.UTF-8
 
-RUN apk add --no-cache libftdi1 libusb libgcc
+RUN apk add --no-cache libusb libgcc
 
 COPY --from=builder /opt/owfs/ /opt/owfs/
 

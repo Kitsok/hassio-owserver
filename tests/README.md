@@ -53,7 +53,8 @@ BUILD_PLATFORM=linux/amd64 BUILD_ARCH=amd64 pytest tests/ -v --tb=short
 |---|---|
 | `test_integration.py` | End-to-end tests against running owserver container (owdir, owread, owhttpd) |
 | `test_template.py` | Template rendering tests for `owfs.template.conf` (device types, temperature scales) |
-| `test_validation.py` | Config validation tests (missing required fields, deprecation warnings) |
+| `test_validation.py` | Checks that the web interface can be enabled and disabled |
+| `test_usb_options.py` | USB address normalization and unsupported adapter rejection |
 | `conftest.py` | Shared fixtures: docker compose lifecycle, template rendering helpers |
 
 ## Cleanup

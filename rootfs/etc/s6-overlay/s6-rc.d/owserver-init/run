@@ -1,52 +1,5 @@
 #!/command/with-contenv bashio
 
-# validating user's options
-for device in $(bashio::config "devices|keys"); do
-    device_type=$(bashio::config "devices[${device}].device_type")
-
-    if [[ "${device_type}" == "serial" ]] || \
-        [[ "${device_type}" == "passive" ]] || \
-        [[ "${device_type}" == "pbm" ]]; then
-        if ! bashio::config.has_value "devices[${device}].device"; then
-            bashio::exit.nok "Device ${device}: Please set the device path for ${device_type}"
-        fi
-    fi
-
-    if [[ "${device_type}" == "ha7net" ]] || \
-        [[ "${device_type}" == "enet" ]] || \
-        [[ "${device_type}" == "etherweather" ]]; then
-        has_server=$(bashio::config.has_value "devices[${device}].server" && echo true || echo false)
-        has_ha7net_server=false
-
-        if [[ "${device_type}" == "ha7net" ]]; then
-            has_ha7net_server=$(bashio::config.has_value "devices[${device}].ha7net_server" && echo true || echo false)
-            if [[ "${has_ha7net_server}" == "true" ]] && [[ "${has_server}" == "false" ]]; then
-                bashio::log.warning "Device ${device}: 'ha7net_server' is deprecated and will be removed in a future release."
-                bashio::log.warning "Please migrate your configuration to use 'server' instead of 'ha7net_server'."
-            elif [[ "${has_ha7net_server}" == "true" ]] && [[ "${has_server}" == "true" ]]; then
-                bashio::log.warning "Device ${device}: Both 'server' and 'ha7net_server' are set. Using 'server', ignoring 'ha7net_server'."
-            fi
-        fi
-
-        if [[ "${has_server}" == "false" ]] && [[ "${has_ha7net_server}" == "false" ]]; then
-            bashio::exit.nok "Device ${device}: Please set the server address for ${device_type}"
-        fi
-    fi
-
-    if [[ "${device_type}" == "link" ]]; then
-        has_device=$(bashio::config.has_value "devices[${device}].device" && echo true || echo false)
-        has_server=$(bashio::config.has_value "devices[${device}].server" && echo true || echo false)
-
-        if [[ "${has_device}" == "true" ]] && [[ "${has_server}" == "true" ]]; then
-            bashio::exit.nok "Device ${device}: Cannot set both 'device' and 'server' for link. Use 'device' for serial/USB or 'server' for network connection."
-        fi
-
-        if [[ "${has_device}" == "false" ]] && [[ "${has_server}" == "false" ]]; then
-            bashio::exit.nok "Device ${device}: Please set 'device' (serial/USB) or 'server' (network) for link"
-        fi
-    fi
-done
-
 # Normalize USB device paths without changing the persisted user options.
 if ! jq -f /etc/owfs-options.jq /data/options.json > /run/owserver-options.json; then
     bashio::exit.nok "Unable to normalize the OWFS device configuration"

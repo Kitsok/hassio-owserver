@@ -1,118 +1,53 @@
 # owserver
 
-The app provides owserver enabling access to 1-Wire sensors through serial, USB, PBM, HA7Net, LinkHub-E, ENET, and EtherWeather adapters, with fake devices available for testing.
+The app connects DS9490R and DS9490B USB adapters to Home Assistant. Fake devices are available for testing without hardware.
 
 ## Configuration
 
-**Note**: _Remember to restart the app whenever configuration change._
+Restart the app after changing its configuration.
 
-Example app configurations:
+For HAOS in a QEMU VM, pass the USB adapter through to the VM first. Device paths below refer to devices inside the VM.
+
+Use all attached DS9490 adapters:
 
 ```yaml
 devices:
-  - device_type: serial
-    device: /dev/ttyUSB0
+  - device_type: usb
 owhttpd: true
 temperature_scale: Celsius
 debug: false
 ```
 
-```yaml
-devices:
-  - device_type: ha7net
-    server: 192.168.50.1
-  - device_type: ha7net
-    server: 192.168.50.2
-owhttpd: true
-temperature_scale: Celsius
-debug: false
-```
+Select a specific adapter:
 
 ```yaml
 devices:
-  - device_type: enet
-    server: 192.168.10.83
+  - device_type: usb
+    device: /dev/bus/usb/001/002
 owhttpd: true
 temperature_scale: Celsius
-debug: false
 ```
 
-```yaml
-devices:
-  - device_type: etherweather
-    server: 192.168.10.100
-owhttpd: true
-temperature_scale: Celsius
-debug: false
-```
-
-```yaml
-devices:
-  - device_type: link
-    server: 192.168.10.50
-owhttpd: true
-temperature_scale: Celsius
-debug: false
-```
-
-```yaml
-devices:
-  - device_type: link
-    device: /dev/ttyUSB0
-owhttpd: true
-temperature_scale: Celsius
-debug: false
-```
-
-**Note**, these are just example configurations, don't copy, please create your own.
-
+The default configuration uses `device_type: fake` to simulate a DS18B20 sensor.
 
 ### Option: `devices`
 
-This option allows you to specify list of 1-Wire devices.
+A list of adapters or simulated devices.
 
 #### Sub-option: `device_type`
 
-Specify the owserver device type from the following options:
-- serial
-- passive (passive serial device)
-- usb
-- pbm (ElabNET's Professional Bus Master PBM-01)
-- ha7net (Ethernet 1-Wire Host Adapter by Embedded Data Systems)
-- enet (OW-SERVER-ENET-2 by Embedded Data Systems)
-- etherweather (EtherWeather)
-- link (LinkHub-E, serial/USB or network)
-- fake (random simulated device)
+- `usb`: DS9490 USB adapters (DS2490-based).
+- `fake`: simulated DS18B20 sensor for testing.
 
 #### Sub-option: `device`
 
-Specify the device.
-This is mandatory option only for following **device_type**:
-- serial
-- passive
-- pbm
+For `usb`, omit `device` to use all attached DS9490 adapters. To select one adapter, set its `/dev/bus/usb/<bus>/<device>` path. The app converts this to the numeric address required by OWFS.
 
-For a DS9490 USB adapter, omit `device` to use all attached adapters. To
-select one adapter, set `device` to its `/dev/bus/usb/<bus>/<device>` path;
-the app converts this to the numeric address required by OWFS. USB bus and
-device numbers can change after reconnecting or restarting the VM, so omitting
-`device` is preferable when only one adapter is passed through.
+USB bus and device numbers can change after reconnecting or restarting the VM, so omitting `device` is preferable when only one adapter is passed through. Multiple adapters can be selected using separate entries in `devices`.
 
-#### Sub-option: `server`
+### Migrating existing configurations
 
-Specify the network address of the device (IP address or hostname, optionally with port).
-This is mandatory option for following **device_type**:
-- ha7net
-- enet
-- etherweather
-- link (when using network connection)
-
-#### Sub-option: `ha7net_server` (deprecated)
-
-> **Deprecated**: `ha7net_server` is deprecated and will be removed in a future release (June 2026).
-> Please migrate your configuration to use `server` instead.
-
-Previously used to specify the address of the ha7net device. Use `server` instead.
+Only `usb` and `fake` are supported. Serial, USB-serial, PBM, and Ethernet bus masters are no longer supported. Existing configurations using those adapters must be replaced with a DS9490 USB configuration; remove the old `server` and `ha7net_server` fields as well.
 
 ### Option: `owhttpd`
 

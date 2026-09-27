@@ -1,6 +1,8 @@
 # OWFS expects a USB bus:device address, not a Linux device-node path.
 .devices |= map(
-  if .device_type == "usb" and (.device // "") != "" then
+  if .device_type != "usb" and .device_type != "fake" then
+    error("Unsupported device_type: \(.device_type); use usb for DS9490 adapters or fake for testing")
+  elif .device_type == "usb" and (.device // "") != "" then
     if (.device | test("^/dev/bus/usb/[0-9]+/[0-9]+$")) then
       .device |= (
         capture("^/dev/bus/usb/(?<bus>[0-9]+)/(?<address>[0-9]+)$")

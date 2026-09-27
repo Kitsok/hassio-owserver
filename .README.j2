@@ -5,7 +5,7 @@
 ![amd64][amd64-shield]
 ![aarch64][aarch64-shield]
 
-The app provides owserver to read 1-Wire devices over serial or USB device.
+The app provides owserver to read 1-Wire devices through DS9490 USB adapters.
 
 {% if channel == "edge" %}
 ## This is EDGE version! 🔧🔧🔧
@@ -18,24 +18,21 @@ The app provides owserver to read 1-Wire devices over serial or USB device.
 
 ## About
 
-This app provides you owserver instance to read 1-Wire devices over serial/usb or ha7net device and exposing reading to Home Assistant via the native integration.
+This app connects DS9490 USB 1-Wire adapters to Home Assistant through the native 1-Wire integration. Fake DS18B20 devices are available for testing without hardware.
 
 ### Supported devices
-App has been tested with
-- [MERA-PROJEKT MP00206-P](http://www.meraprojekt.com.pl/mp00206-p.html)
-- [ElabNET's Professional Busmaster PBM-01](https://shop.elabnet.de/en/1-wire/series/h/1-wire-professional-bus-master-pbm01-usb_812_2073)
-- [HA7Net](https://www.embeddeddatasystems.com/HA7Net--Ethernet-1-Wire-Host-Adapter_p_22.html)
-- DS9490R USB 1-Wire (blue USB to RJ11 dongle)
-- [USB to One Wire converter - Virtual Com Port FT232RL based](https://denkovi.com/usb-to-one-wire-interface-adaptor-converter-thermometer)
 
-but shoud work well with other serial/usb/ha7net/passive devices. Please let me know what device you're using so I will update device list for further reference.
+- DS9490R and DS9490B USB adapters (DS2490-based).
+- Fake devices for testing.
+
+For HAOS in a QEMU VM, pass the USB adapter through to the VM before configuring the app.
 
 ## Installation and configuration
 
 ### Installation
 
 1. Access your Home Assistant, go to **Apps** -> **Install app** and add this URL as an additional repository: 
-`{% if channel == "edge" %}https://github.com/lrybak/addon-repository-edge{% elif channel == "beta" %}https://github.com/lrybak/addon-repository-beta{% else %}https://github.com/lrybak/addon-repository{% endif %}`
+`https://github.com/Kitsok/hassio-owserver`
 1. Find the "owserver (1-Wire)" app and click the "INSTALL" button.
 1. Configure the app and click on "START". With default configuration app starts with fake (mocked) devices.
 1. Add to Home Assistant through the Integrations. Go to Integrations, Add Integration, Choose 1-Wire
@@ -45,7 +42,7 @@ but shoud work well with other serial/usb/ha7net/passive devices. Please let me 
 1. That's it. On the integrations page wou will find 1-Wire integration with 1-Wire devices.
 
 ### Configuration
-Please check the **[full documentation page](https://github.com/lrybak/hassio-owserver/blob/master/DOCS.md)**.
+Please check the **[full documentation page](https://github.com/Kitsok/hassio-owserver/blob/master/DOCS.md)**.
 
 ## Contributors 
 - [lrybak] (https://github.com/lrybak) - primary author and maintainer
@@ -60,17 +57,14 @@ Please check the **[full documentation page](https://github.com/lrybak/hassio-ow
 
 ## Screenshots
 
-![Integration setup 1](https://github.com/lrybak/hassio-owserver/raw/master/images/screenshot_setup1.png)
-![Integration setup 2](https://github.com/lrybak/hassio-owserver/raw/master/images/screenshot_setup2.png)
-![Integration setup 3](https://github.com/lrybak/hassio-owserver/raw/master/images/screenshot_setup3.jpg)
-![Integrations page](https://github.com/lrybak/hassio-owserver/raw/master/images/screenshot_integrations.jpg)
-![owhttpd](https://github.com/lrybak/hassio-owserver/raw/master/images/screenshot_owhttpd.png)
+![Integration setup 1](https://github.com/Kitsok/hassio-owserver/raw/master/images/screenshot_setup1.png)
+![Integration setup 2](https://github.com/Kitsok/hassio-owserver/raw/master/images/screenshot_setup2.png)
+![Integration setup 3](https://github.com/Kitsok/hassio-owserver/raw/master/images/screenshot_setup3.jpg)
+![Integrations page](https://github.com/Kitsok/hassio-owserver/raw/master/images/screenshot_integrations.jpg)
+![owhttpd](https://github.com/Kitsok/hassio-owserver/raw/master/images/screenshot_owhttpd.png)
 
 [version]: https://img.shields.io/badge/version-{{ version | replace("-", "--") }}-blue.svg
-[releases]: https://github.com/lrybak/hassio-owserver/releases
-[addons-repository]: https://github.com/lrybak/addon-repository
-[addons-repository-beta]: https://github.com/lrybak/addon-repository-beta
-[addons-repository-edge]: https://github.com/lrybak/addon-repository-edge
+[releases]: https://github.com/Kitsok/hassio-owserver/releases
 
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg

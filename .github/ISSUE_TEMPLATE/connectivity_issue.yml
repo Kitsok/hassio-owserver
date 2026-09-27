@@ -44,7 +44,7 @@ body:
     id: device-type
     attributes:
       label: 1-Wire adapter type
-      description: What device type are you using? (e.g. DS9490R USB, DS2482-100 i2c, GPIO w1)
+      description: Which DS9490 USB adapter are you using (DS9490R or DS9490B)?
       placeholder: e.g. DS9490R (USB)
     validations:
       required: true
