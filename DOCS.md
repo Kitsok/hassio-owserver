@@ -1,6 +1,6 @@
 # owserver
 
-The app provides owserver enabling access to 1-Wire sensors over serial, i2c, usb, w1, pbm, ha7net fake devices.
+The app provides owserver enabling access to 1-Wire sensors over serial, usb, w1, pbm, ha7net fake devices.
 
 ## Configuration
 
@@ -76,7 +76,6 @@ This option allows you to specify list of 1-Wire devices.
 Specify the owserver device type from the following options:
 - serial
 - passive (passive serial device)
-- i2c
 - usb
 - pbm (ElabNET's Professional Bus Master PBM-01)
 - ha7net (Ethernet 1-Wire Host Adapter by Embedded Data Systems)
@@ -92,7 +91,6 @@ Specify the device.
 This is mandatory option only for following **device_type**:
 - serial
 - passive
-- i2c
 - pbm
 
 For a DS9490 USB adapter, omit `device` to use all attached adapters. To

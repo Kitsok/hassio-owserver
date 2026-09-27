@@ -25,7 +25,7 @@ The following devices are supported but have not been tested yet:
 
 If you have successfully set up any of these devices, please open a PR to update the documentation or reach out so we can confirm compatibility.
 
-The app should also work well with other serial/i2c/usb/ha7net/enet devices. Please let me know what device you're using so I will update the device list for further reference.
+The app should also work well with other serial/usb/ha7net/enet devices. Please let me know what device you're using so I will update the device list for further reference.
 
 ## Installation and configuration
 

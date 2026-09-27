@@ -64,10 +64,6 @@ class TestDeviceTypes:
         conf = render_template(make_options({"device_type": "passive", "device": "/dev/ttyS0"}))
         assert "server: passive = /dev/ttyS0" in conf
 
-    def test_i2c(self, render_template):
-        conf = render_template(make_options({"device_type": "i2c", "device": "/dev/i2c-1"}))
-        assert "server: i2c = /dev/i2c-1:ALL" in conf
-
     def test_link_device(self, render_template):
         conf = render_template(make_options({"device_type": "link", "device": "/dev/ttyUSB0"}))
         assert "server: link = /dev/ttyUSB0" in conf

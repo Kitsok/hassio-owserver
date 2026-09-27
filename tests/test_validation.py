@@ -14,7 +14,7 @@ def make_options(devices, owhttpd=True):
 
 
 class TestDevicePathRequired:
-    @pytest.mark.parametrize("device_type", ["serial", "passive", "i2c", "pbm"])
+    @pytest.mark.parametrize("device_type", ["serial", "passive", "pbm"])
     def test_missing_device_path(self, start_with_config, device_type):
         logs = start_with_config(make_options({"device_type": device_type}))
         assert "Please set the device path" in logs

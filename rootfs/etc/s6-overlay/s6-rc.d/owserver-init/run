@@ -6,7 +6,6 @@ for device in $(bashio::config "devices|keys"); do
 
     if [[ "${device_type}" == "serial" ]] || \
         [[ "${device_type}" == "passive" ]] || \
-        [[ "${device_type}" == "i2c" ]] || \
         [[ "${device_type}" == "pbm" ]]; then
         if ! bashio::config.has_value "devices[${device}].device"; then
             bashio::exit.nok "Device ${device}: Please set the device path for ${device_type}"
