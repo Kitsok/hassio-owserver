@@ -23,6 +23,17 @@ are tested. Docker still reuses unchanged build layers. CI explicitly sets
 `OWSERVER_TEST_REUSE_IMAGE=1` to test the image built in its preceding step.
 Set that variable locally only when intentionally testing a prebuilt image.
 
+## Template tests without Docker
+
+On supported Linux architectures, template tests download and use a local
+`tempio` binary. They require `jq`, but do not start Docker:
+
+```bash
+pytest tests/test_template.py -v
+```
+
+Other platforms use the container fallback and require Docker.
+
 ## Environment variables
 
 Tests detect the target platform automatically. To override (e.g. in CI):

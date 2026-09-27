@@ -27,3 +27,24 @@ def test_compose_build_policy(monkeypatch, tmp_path, reuse, expected):
     finally:
         with pytest.raises(StopIteration):
             next(fixture)
+
+
+def test_local_template_renderer_does_not_start_compose(monkeypatch, tmp_path):
+    request = Mock()
+    binary = tmp_path / "tempio"
+    render = Mock(return_value="rendered locally")
+    monkeypatch.setattr(conftest, "_render_with_binary", render)
+    renderer = conftest.render_template.__wrapped__(binary, request)
+    assert renderer({"devices": []}) == "rendered locally"
+    render.assert_called_once_with(binary, {"devices": []})
+    request.getfixturevalue.assert_not_called()
+
+
+def test_container_template_renderer_requests_compose(monkeypatch):
+    request = Mock()
+    render = Mock(return_value="rendered in container")
+    monkeypatch.setattr(conftest, "_render_with_container", render)
+    renderer = conftest.render_template.__wrapped__(None, request)
+    request.getfixturevalue.assert_called_once_with("compose_project")
+    assert renderer({"devices": []}) == "rendered in container"
+    render.assert_called_once_with({"devices": []})

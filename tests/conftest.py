@@ -160,12 +160,14 @@ def tempio_bin(tmp_path_factory):
 
 
 @pytest.fixture
-def render_template(tempio_bin, compose_project):
+def render_template(tempio_bin, request):
     """Render owfs.template.conf — local binary on Linux, container as fallback."""
     if tempio_bin is not None:
         def _render(options: dict) -> str:
             return _render_with_binary(tempio_bin, options)
     else:
+        request.getfixturevalue("compose_project")
+
         def _render(options: dict) -> str:
             return _render_with_container(options)
     return _render
