@@ -80,7 +80,7 @@ class TestDeviceTypes:
         conf = render_template(make_options({"device_type": "pbm", "device": "/dev/ttyACM0"}))
         assert "server: usb = all" in conf
         assert "server: usb = scan" in conf
-        assert "pbm = /dev/ttyACM0" in conf
+        assert "server: pbm = /dev/ttyACM0" in conf.splitlines()
 
 
 class TestTemperatureScales:

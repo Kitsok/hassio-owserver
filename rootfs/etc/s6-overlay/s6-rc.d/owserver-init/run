@@ -17,9 +17,10 @@ for device in $(bashio::config "devices|keys"); do
         [[ "${device_type}" == "enet" ]] || \
         [[ "${device_type}" == "etherweather" ]]; then
         has_server=$(bashio::config.has_value "devices[${device}].server" && echo true || echo false)
-        has_ha7net_server=$(bashio::config.has_value "devices[${device}].ha7net_server" && echo true || echo false)
+        has_ha7net_server=false
 
         if [[ "${device_type}" == "ha7net" ]]; then
+            has_ha7net_server=$(bashio::config.has_value "devices[${device}].ha7net_server" && echo true || echo false)
             if [[ "${has_ha7net_server}" == "true" ]] && [[ "${has_server}" == "false" ]]; then
                 bashio::log.warning "Device ${device}: 'ha7net_server' is deprecated and will be removed in a future release."
                 bashio::log.warning "Please migrate your configuration to use 'server' instead of 'ha7net_server'."

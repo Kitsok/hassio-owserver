@@ -26,6 +26,14 @@ class TestServerAddressRequired:
         logs = start_with_config(make_options({"device_type": device_type}))
         assert "Please set the server address" in logs
 
+    @pytest.mark.parametrize("device_type", ["enet", "etherweather"])
+    def test_legacy_ha7net_address_does_not_replace_server(self, start_with_config, device_type):
+        logs = start_with_config(make_options({
+            "device_type": device_type,
+            "ha7net_server": "192.168.1.10",
+        }))
+        assert "Please set the server address" in logs
+
 
 class TestLinkValidation:
     def test_link_both_device_and_server(self, start_with_config):
