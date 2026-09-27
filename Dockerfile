@@ -40,7 +40,7 @@ RUN cd /owfs-code \
     --enable-ftdi \
     --enable-usb \
     --enable-owshell \
-    --enable-w1 \
+    --disable-w1 \
   && make -j $(nproc 2>/dev/null || echo 2) && make install
 
 # Stage 2: Runtime image

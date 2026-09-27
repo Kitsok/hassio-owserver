@@ -56,10 +56,6 @@ class TestDeviceTypes:
         conf = render_template(make_options({"device_type": "etherweather", "server": "10.0.0.5"}))
         assert "server: etherweather = 10.0.0.5" in conf
 
-    def test_w1(self, render_template):
-        conf = render_template(make_options({"device_type": "w1"}))
-        assert "server: w1" in conf
-
     def test_passive(self, render_template):
         conf = render_template(make_options({"device_type": "passive", "device": "/dev/ttyS0"}))
         assert "server: passive = /dev/ttyS0" in conf

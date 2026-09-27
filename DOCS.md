@@ -1,6 +1,6 @@
 # owserver
 
-The app provides owserver enabling access to 1-Wire sensors over serial, usb, w1, pbm, ha7net fake devices.
+The app provides owserver enabling access to 1-Wire sensors through serial, USB, PBM, HA7Net, LinkHub-E, ENET, and EtherWeather adapters, with fake devices available for testing.
 
 ## Configuration
 
@@ -82,7 +82,6 @@ Specify the owserver device type from the following options:
 - enet (OW-SERVER-ENET-2 by Embedded Data Systems)
 - etherweather (EtherWeather)
 - link (LinkHub-E, serial/USB or network)
-- w1 (direct access via GPIO on RasPi)
 - fake (random simulated device)
 
 #### Sub-option: `device`

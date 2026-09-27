@@ -26,7 +26,7 @@ options:
 schema:
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   devices:
-    - device_type: list(serial|passive|usb|pbm|ha7net|w1|link|enet|etherweather|fake)
+    - device_type: list(serial|passive|usb|pbm|ha7net|link|enet|etherweather|fake)
       device: device?
       server: match(^([a-zA-Z0-9\.\-\_]+)(:[0-9]+)?$)?
       ha7net_server: match(^([a-zA-Z0-9\.\-\_]+)(:[0-9]+)?$)?
