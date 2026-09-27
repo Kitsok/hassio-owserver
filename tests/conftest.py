@@ -71,11 +71,11 @@ def compose_project(tmp_path_factory):
     ).stdout.strip()
     env["BUILD_FROM"] = build_from
 
-    # Build and start
-    build_flag = "--no-build" if subprocess.run(
-        ["docker", "image", "inspect", "local/owserver:ci"],
-        capture_output=True,
-    ).returncode == 0 else "--build"
+    # Rebuild local changes unless CI explicitly provides a prebuilt image.
+    build_flag = (
+        "--no-build" if os.environ.get("OWSERVER_TEST_REUSE_IMAGE") == "1"
+        else "--build"
+    )
 
     subprocess.run(
         [*COMPOSE_CMD, "up", "-d", build_flag],

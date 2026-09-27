@@ -114,6 +114,7 @@ jobs:
         run: pip install -r tests/requirements.txt
       - name: 🧪 Run tests
         env:
+          OWSERVER_TEST_REUSE_IMAGE: "1"
           BUILD_PLATFORM: ${{ steps.flags.outputs.platform }}
           BUILD_ARCH: ${{ matrix.architecture }}
         run: pytest tests/ -v --tb=short

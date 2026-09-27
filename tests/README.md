@@ -18,8 +18,10 @@ pip install -r tests/requirements.txt
 pytest tests/ -v --tb=short
 ```
 
-On first run, Docker image `local/owserver:ci` will be built automatically via docker compose.
-If the image already exists, it will be reused (no rebuild).
+Each run builds `local/owserver:ci` through Docker Compose so local changes
+are tested. Docker still reuses unchanged build layers. CI explicitly sets
+`OWSERVER_TEST_REUSE_IMAGE=1` to test the image built in its preceding step.
+Set that variable locally only when intentionally testing a prebuilt image.
 
 ## Environment variables
 
